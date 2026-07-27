@@ -1,0 +1,11 @@
+prefect==3.*
+pandas
+numpy
+sqlalchemy
+psycopg2-binary
+python-dotenv
+requests
+scikit-learn
+jupyter
+asyncpg
+psycopg2-binary

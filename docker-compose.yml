@@ -1,0 +1,32 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: br381-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: br381
+      POSTGRES_PASSWORD: br381
+      POSTGRES_DB: br381
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  prefect:
+    image: prefecthq/prefect:3-latest
+    container_name: br381-prefect
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://br381:br381@postgres:5432/br381
+    ports:
+      - "4200:4200"
+    command:
+      prefect server start --host 0.0.0.0
+
+
+volumes:
+  postgres_data:
