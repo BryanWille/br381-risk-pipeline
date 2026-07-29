@@ -1,6 +1,17 @@
 from src.database.connection import get_connection
-from src.database.weather_repository import insert_weather_accident
-from src.weather.open_meteo import get_historical_weather
+
+from src.database.weather_repository import (
+    insert_weather_accident
+)
+
+from src.database.weather_cache_repository import (
+    get_weather_cache,
+    save_weather_cache
+)
+
+from src.weather.open_meteo import (
+    get_historical_weather
+)
 
 
 def enrich_accidents_weather():
@@ -9,19 +20,26 @@ def enrich_accidents_weather():
 
     cur = conn.cursor()
 
+
     cur.execute("""
         SELECT *
         FROM silver.accidents_clean
     """)
+
 
     columns = [
         desc[0]
         for desc in cur.description
     ]
 
+
     rows = cur.fetchall()
 
+
     total = 0
+    cache_hits = 0
+    api_calls = 0
+
 
     for row in rows:
 
@@ -29,29 +47,103 @@ def enrich_accidents_weather():
             zip(columns, row)
         )
 
-        weather = get_historical_weather(
-            float(accident["latitude"]),
-            float(accident["longitude"]),
-            accident["data_acidente"].strftime("%Y-%m-%d")
-	)
 
-        if weather is None:
-            print(f"Sem clima para acidente {accident['id']}")
-            continue
+        latitude = round(
+            float(accident["latitude"]),
+            3
+        )
+
+        longitude = round(
+            float(accident["longitude"]),
+            3
+        )
+
+        data = accident["data_acidente"]
 
         hour = accident["horario"].hour
 
-        temperature = weather["hourly"]["temperature_2m"][hour]
 
-        precipitation = weather["hourly"]["precipitation"][hour]
+        weather = get_weather_cache(
+            latitude,
+            longitude,
+            data,
+            hour
+        )
 
-        wind = weather["hourly"]["wind_speed_10m"][hour]
+
+        if weather:
+
+            cache_hits += 1
+
+            temperature = weather["temperature_2m"]
+
+            precipitation = weather["precipitation"]
+
+            wind = weather["wind_speed_10m"]
+
+
+        else:
+
+            api_calls += 1
+
+
+            response = get_historical_weather(
+                latitude,
+                longitude,
+                data.strftime("%Y-%m-%d")
+            )
+
+
+            if response is None:
+
+                print(
+                    f"Sem clima para acidente {accident['id']}"
+                )
+
+                continue
+
+
+            temperature = (
+                response["hourly"]
+                ["temperature_2m"]
+                [hour]
+            )
+
+
+            precipitation = (
+                response["hourly"]
+                ["precipitation"]
+                [hour]
+            )
+
+
+            wind = (
+                response["hourly"]
+                ["wind_speed_10m"]
+                [hour]
+            )
+
+
+            save_weather_cache(
+                latitude,
+                longitude,
+                data,
+                hour,
+                temperature,
+                precipitation,
+                wind
+            )
+
 
 
         acidente_grave = (
+
             1
+
             if int(accident["mortos"]) > 0
+
             or int(accident["feridos_graves"]) > 0
+
             else 0
         )
 
@@ -105,7 +197,9 @@ def enrich_accidents_weather():
 
         insert_weather_accident(payload)
 
+
         total += 1
+
 
 
     cur.close()
@@ -114,5 +208,7 @@ def enrich_accidents_weather():
 
 
     print(
-        f"{total} acidentes enriquecidos"
+        f"{total} acidentes enriquecidos | "
+        f"cache: {cache_hits} | "
+        f"API: {api_calls}"
     )

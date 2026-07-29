@@ -32,24 +32,25 @@ def create_risk_aggregates():
             OR feridos_graves > 0
         ) AS acidentes_graves,
 
-        SUM(mortos),
+        COALESCE(SUM(mortos), 0),
 
-        SUM(feridos_graves),
+        COALESCE(SUM(feridos_graves), 0),
 
         ROUND(
             COUNT(*) FILTER (
                 WHERE mortos > 0
                 OR feridos_graves > 0
-            )::numeric 
-            / COUNT(*)::numeric,
+            )::numeric
+            /
+            NULLIF(COUNT(*)::numeric, 0),
             4
         ),
 
         ROUND(
             (
-                SUM(mortos) * 10
+                COALESCE(SUM(mortos), 0) * 10
                 +
-                SUM(feridos_graves) * 3
+                COALESCE(SUM(feridos_graves), 0) * 3
                 +
                 COUNT(*) * 0.1
             )::numeric,
@@ -61,13 +62,19 @@ def create_risk_aggregates():
     GROUP BY km_faixa_label
 
     ON CONFLICT (km_faixa_label)
+
     DO UPDATE SET
 
         acidentes_total = EXCLUDED.acidentes_total,
+
         acidentes_graves = EXCLUDED.acidentes_graves,
+
         total_mortos = EXCLUDED.total_mortos,
+
         total_feridos_graves = EXCLUDED.total_feridos_graves,
+
         taxa_gravidade = EXCLUDED.taxa_gravidade,
+
         indice_risco = EXCLUDED.indice_risco;
 
     """

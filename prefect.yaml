@@ -1,0 +1,15 @@
+name: br381-risk-pipeline
+
+prefect-version: "3.8.0"
+
+deployments:
+  - name: br381
+
+    entrypoint: src/flows/pipeline_flow.py:br381_pipeline
+
+    work_pool:
+      name: br381-pool
+
+    schedule:
+      cron: "0 3 * * *"
+      timezone: America/Sao_Paulo

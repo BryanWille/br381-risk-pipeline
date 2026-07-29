@@ -69,11 +69,13 @@ def ingest_to_bronze(csv_path: str):
         )
     )
 
-    insert_prf_accidents(
+    inserted = insert_prf_accidents(
         columns,
         values
     )
 
     print(
-        f"{len(values)} registros inseridos na Bronze."
+        f"PRF Retornou: {len(values)} registros | "
+        f"Novos inseridos: {inserted} | "
+        f"Ignorados: {len(values) - inserted}"
     )

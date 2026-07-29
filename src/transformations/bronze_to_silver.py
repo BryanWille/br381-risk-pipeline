@@ -92,7 +92,32 @@ def transform_accidents():
 
     WHERE br = 381
 
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE SET
+    	data_acidente = EXCLUDED.data_acidente,
+    	horario = EXCLUDED.horario,
+    	br = EXCLUDED.br,
+    	km = EXCLUDED.km,
+    	km_inicio = EXCLUDED.km_inicio,
+    	km_fim = EXCLUDED.km_fim,
+    	km_faixa_label = EXCLUDED.km_faixa_label,
+    	municipio = EXCLUDED.municipio,
+    	uf = EXCLUDED.uf,
+    	causa_acidente = EXCLUDED.causa_acidente,
+    	tipo_acidente = EXCLUDED.tipo_acidente,
+    	classificacao_acidente = EXCLUDED.classificacao_acidente,
+    	fase_dia = EXCLUDED.fase_dia,
+    	sentido_via = EXCLUDED.sentido_via,
+    	condicao_metereologica = EXCLUDED.condicao_metereologica,
+    	tipo_pista = EXCLUDED.tipo_pista,
+    	tracado_via = EXCLUDED.tracado_via,
+    	uso_solo = EXCLUDED.uso_solo,
+    	pessoas = EXCLUDED.pessoas,
+    	mortos = EXCLUDED.mortos,
+    	feridos_leves = EXCLUDED.feridos_leves,
+    	feridos_graves = EXCLUDED.feridos_graves,
+    	feridos = EXCLUDED.feridos,
+    	latitude = EXCLUDED.latitude,
+    	longitude = EXCLUDED.longitude;
 
     """
 
