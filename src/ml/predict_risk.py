@@ -6,8 +6,8 @@ from collections import Counter
 from src.database.connection import get_connection
 from src.database.risk_repository import insert_risk_prediction
 from src.config.risk_config import (
-    HIGH_RISK_THRESHOLD,
-    MEDIUM_RISK_THRESHOLD
+    get_high_risk_threshold,
+    get_medium_risk_threshold
 )
 
 def load_features():
@@ -75,11 +75,11 @@ def prepare_features(df, features):
 
 def classify_risk(probability):
 
-    if probability >= HIGH_RISK_THRESHOLD:
+    if probability >= get_high_risk_threshold():
 
         return "ALTO"
 
-    elif probability >= MEDIUM_RISK_THRESHOLD:
+    elif probability >= get_medium_risk_threshold():
 
         return "MEDIO"
 
@@ -106,7 +106,7 @@ def predict_risk():
 
     threshold = model_data.get(
         "threshold",
-        HIGH_RISK_THRESHOLD
+        get_high_risk_threshold()
     )
 
 

@@ -8,8 +8,8 @@ from src.database.current_risk_repository import insert_current_risk
 from src.weather.open_meteo import get_current_weather
 
 from src.config.risk_config import (
-    HIGH_RISK_THRESHOLD,
-    MEDIUM_RISK_THRESHOLD
+    get_high_risk_threshold,
+    get_medium_risk_threshold
 )
 
 def get_current_hotspots():
@@ -76,12 +76,12 @@ def get_current_hotspots():
 
 def classify_risk(probability):
 
-    if probability >= HIGH_RISK_THRESHOLD:
+    if probability >= get_high_risk_threshold():
 
         return "ALTO"
 
 
-    elif probability >= MEDIUM_RISK_THRESHOLD:
+    elif probability >= get_medium_risk_threshold():
 
         return "MEDIO"
 

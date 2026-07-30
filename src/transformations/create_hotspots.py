@@ -1,14 +1,17 @@
 from src.database.connection import get_connection
-
+from src.config.risk_config import (
+    get_hotspots_limit
+)
 
 def create_hotspots():
 
+    limit = get_hotspots_limit()
     conn = get_connection()
 
     cur = conn.cursor()
 
 
-    sql = """
+    sql = f"""
 
     TRUNCATE gold.current_hotspots;
 
@@ -43,7 +46,7 @@ def create_hotspots():
 
     ORDER BY indice_risco DESC
 
-    LIMIT 10;
+    LIMIT {limit};
 
 
     """

@@ -8,15 +8,29 @@ from src.alerts.spam_guard import (
     should_send_alert
 )
 
-
-THRESHOLD = 0.60
+from src.config.risk_config import (
+    get_telegram_alert_threshold,
+    get_telegram_alert_enabled
+)
 
 
 def check_high_risk_alerts():
 
+    if not get_telegram_alert_enabled():
+
+        print(
+            "Alertas Telegram desativados."
+        )
+
+        return
+    
+    threshold = get_telegram_alert_threshold()
+
+
     conn = get_connection()
 
     cur = conn.cursor()
+
 
     query = """
 
@@ -38,15 +52,19 @@ def check_high_risk_alerts():
 
     """
 
+
     cur.execute(
         query,
-        (THRESHOLD,)
+        (threshold,)
     )
+
 
     rows = cur.fetchall()
 
+
     cur.close()
     conn.close()
+
 
     if not rows:
 
@@ -56,7 +74,9 @@ def check_high_risk_alerts():
 
         return
 
+
     alerts = []
+
 
     for row in rows:
 
@@ -68,7 +88,9 @@ def check_high_risk_alerts():
             precipitation,
             wind,
             hora
+
         ) = row
+
 
         if should_send_alert(
             km,
@@ -94,6 +116,7 @@ def check_high_risk_alerts():
 
             })
 
+
     if not alerts:
 
         print(
@@ -102,6 +125,7 @@ def check_high_risk_alerts():
 
         return
 
+
     message = """
 🚨 <b>ALERTA BR-381</b>
 
@@ -109,13 +133,16 @@ Foram detectados riscos elevados nos seguintes trechos:
 
 """
 
+
     for alert in alerts:
+
 
         chuva = (
             "Sim"
             if alert["precipitation"] > 0
             else "Não"
         )
+
 
         message += (
 
@@ -135,9 +162,11 @@ Foram detectados riscos elevados nos seguintes trechos:
 
         )
 
+
     send_telegram_message(
         message
     )
+
 
     print(
         f"{len(alerts)} alerta(s) enviados."
