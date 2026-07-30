@@ -1,46 +1,35 @@
-CREATE TABLE IF NOT EXISTS bronze.prf_accidents_raw (
-
-    id BIGINT,
-
-    data_inversa TEXT,
-    dia_semana TEXT,
-    horario TEXT,
-
-    uf TEXT,
-    br INTEGER,
-    km TEXT,
-    municipio TEXT,
-
-    causa_acidente TEXT,
-    tipo_acidente TEXT,
-    classificacao_acidente TEXT,
-
-    fase_dia TEXT,
-    sentido_via TEXT,
-    condicao_metereologica TEXT,
-
-    tipo_pista TEXT,
-    tracado_via TEXT,
-    uso_solo TEXT,
-
-    pessoas INTEGER,
-    mortos INTEGER,
-    feridos_leves INTEGER,
-    feridos_graves INTEGER,
-    feridos INTEGER,
-    ilesos INTEGER,
-    ignorados INTEGER,
-    veiculos INTEGER,
-
-    latitude TEXT,
-    longitude TEXT,
-
-    regional TEXT,
-    delegacia TEXT,
-    uop TEXT,
-
-
-    _source_file TEXT,
-    _ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-
-);
+CREATE TABLE
+    IF NOT EXISTS bronze.prf_accidents_raw (
+        id BIGINT,
+        data_inversa TEXT,
+        dia_semana TEXT,
+        horario TEXT,
+        uf TEXT,
+        br INTEGER,
+        km TEXT,
+        municipio TEXT,
+        causa_acidente TEXT,
+        tipo_acidente TEXT,
+        classificacao_acidente TEXT,
+        fase_dia TEXT,
+        sentido_via TEXT,
+        condicao_metereologica TEXT,
+        tipo_pista TEXT,
+        tracado_via TEXT,
+        uso_solo TEXT,
+        pessoas INTEGER,
+        mortos INTEGER,
+        feridos_leves INTEGER,
+        feridos_graves INTEGER,
+        feridos INTEGER,
+        ilesos INTEGER,
+        ignorados INTEGER,
+        veiculos INTEGER,
+        latitude TEXT,
+        longitude TEXT,
+        regional TEXT,
+        delegacia TEXT,
+        uop TEXT,
+        _source_file TEXT,
+        _ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
