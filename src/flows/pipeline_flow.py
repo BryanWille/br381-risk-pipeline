@@ -8,6 +8,7 @@ from src.flows.weather_enrichment_flow import weather_flow
 from src.flows.create_ml_features_flow import ml_features
 from src.flows.predict_risk_flow import risk_prediction_flow
 from src.flows.current_risk_flow import current_risk_flow
+from src.flows.alert_flow import risk_alert_flow
 
 from src.database.pipeline_audit_repository import (
     start_pipeline_run,
@@ -61,6 +62,8 @@ def br381_pipeline():
         print("Calculando risco atual")
         current_risk_flow()
 
+        print("Enviando alertas")
+        risk_alert_flow()
 
         finish_pipeline_run(
             run_id,

@@ -7,13 +7,17 @@ from src.database.connection import get_connection
 from src.database.current_risk_repository import insert_current_risk
 from src.weather.open_meteo import get_current_weather
 
-
+from src.config.risk_config import (
+    HIGH_RISK_THRESHOLD,
+    MEDIUM_RISK_THRESHOLD
+)
 
 def get_current_hotspots():
 
     conn = get_connection()
 
     query = """
+
         SELECT
 
             h.km_faixa_label,
@@ -22,21 +26,40 @@ def get_current_hotspots():
 
             AVG(a.longitude) AS longitude,
 
-            AVG(a.km) AS km
+            AVG(a.km) AS km,
+
+            AVG(m.pessoas) AS pessoas,
+
+            MAX(m.tem_curva) AS tem_curva,
+
+            MAX(m.pista_simples) AS pista_simples
+
 
         FROM gold.current_hotspots h
+
 
         JOIN silver.accidents_clean a
 
         ON a.km_faixa_label = h.km_faixa_label
 
+
+        JOIN gold.ml_accident_features m
+
+        ON m.id = a.id
+
+
         GROUP BY
+
             h.km_faixa_label,
+
             h.indice_risco
+
 
         ORDER BY h.indice_risco DESC
 
+
         LIMIT 10
+
     """
 
 
@@ -51,16 +74,14 @@ def get_current_hotspots():
 
     return df
 
-
-
 def classify_risk(probability):
 
-    if probability >= 0.35:
+    if probability >= HIGH_RISK_THRESHOLD:
 
         return "ALTO"
 
 
-    elif probability >= 0.15:
+    elif probability >= MEDIUM_RISK_THRESHOLD:
 
         return "MEDIO"
 
@@ -170,11 +191,11 @@ def predict_current_risk():
             "tem_chuva":
                 1 if precipitation > 0 else 0,
 
-            "tem_curva": 0,
+            "tem_curva": int(row["tem_curva"]),
 
-            "pista_simples": 0,
+            "pista_simples": int(row["pista_simples"]),
 
-            "pessoas": 1,
+            "pessoas": float(row["pessoas"]),
 
             "temperature_2m": temperature,
 
