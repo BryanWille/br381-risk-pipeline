@@ -1,9 +1,5 @@
 name: br381-risk-pipeline
 
-pull:
-  - prefect.deployments.steps.set_working_directory:
-      directory: /app
-
 deployments:
   - name: br381-daily
     entrypoint: src/flows/pipeline_flow.py:br381_pipeline
@@ -11,7 +7,7 @@ deployments:
       name: br381-pool
     schedule:
       cron: "0 6 * * *"
-      timezone: America/Sao_Paulo
+      timezone: "America/Sao_Paulo"
 
   - name: br381-monitoring
     entrypoint: src/flows/current_monitoring_flow.py:current_monitoring
@@ -19,4 +15,4 @@ deployments:
       name: br381-pool
     schedule:
       cron: "0 * * * *"
-      timezone: America/Sao_Paulo
+      timezone: "America/Sao_Paulo"
