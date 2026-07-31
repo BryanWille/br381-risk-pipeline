@@ -9,7 +9,7 @@ from src.flows.create_ml_features_flow import ml_features
 from src.flows.predict_risk_flow import risk_prediction_flow
 from src.flows.current_risk_flow import current_risk_flow
 from src.flows.alert_flow import risk_alert_flow
-
+from src.database.init_db import initialize_db
 from src.database.pipeline_audit_repository import (
     start_pipeline_run,
     finish_pipeline_run
@@ -23,6 +23,8 @@ from src.database.pipeline_audit_repository import (
     retry_delay_seconds=60
 )
 def br381_pipeline():
+    # Garantir que o banco e tabelas necessárias existam antes de registrar a execução
+    initialize_db()
 
     run_id = start_pipeline_run(
         "br381-full-pipeline"
