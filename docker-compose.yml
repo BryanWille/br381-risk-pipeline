@@ -28,11 +28,13 @@ services:
         condition: service_healthy
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://br381:br381@postgres:5432/br381
+      PREFECT_API_DATABASE_MIGRATE_ON_START: "true"
       PREFECT_SERVER_API_HOST: 0.0.0.0
-      PREFECT_UI_API_URL: http://localhost:4200/api
+      PREFECT_UI_API_URL: /api
     ports:
       - "4200:4200"
-    command: prefect server start --host 0.0.0.0
+    command: >
+      bash -c "pip install -q asyncpg && prefect server start --host 0.0.0.0 --port 4200"
     networks:
       - br381-net
 
