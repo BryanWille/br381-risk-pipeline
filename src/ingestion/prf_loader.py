@@ -1,6 +1,11 @@
 from pathlib import Path
+import logging
 
 import pandas as pd
+
+
+logger = logging.getLogger(__name__)
+
 
 REQUIRED_COLUMNS = [
     "id",
@@ -37,45 +42,47 @@ REQUIRED_COLUMNS = [
 
 
 def load_csv(csv_path: str) -> pd.DataFrame:
+    path = Path(csv_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"Arquivo não encontrado: {csv_path}")
+
     df = pd.read_csv(
-        csv_path,
+        path,
         sep=";",
         encoding="iso-8859-1",
         dtype=str,
+        keep_default_na=False,
     )
 
-    missing = set(REQUIRED_COLUMNS) - set(df.columns)
-
+    missing = sorted(set(REQUIRED_COLUMNS) - set(df.columns))
     if missing:
         raise ValueError(f"Colunas ausentes: {missing}")
 
-    df["_source_file"] = Path(csv_path).name
+    df = df[REQUIRED_COLUMNS].copy()
+    df["_source_file"] = path.name
 
     return df
+
 
 from src.database.bronze_repository import insert_prf_accidents
 
 
 def ingest_to_bronze(csv_path: str):
+    logger.info("Iniciando ingestão do arquivo %s", csv_path)
 
     df = load_csv(csv_path)
 
     columns = list(df.columns)
+    values = list(df.itertuples(index=False, name=None))
 
-    values = list(
-        df.itertuples(
-            index=False,
-            name=None
-        )
+    inserted = insert_prf_accidents(columns, values)
+
+    logger.info(
+        "PRF retornou %s registros | Novos inseridos: %s | Ignorados: %s",
+        len(values),
+        inserted,
+        len(values) - inserted,
     )
 
-    inserted = insert_prf_accidents(
-        columns,
-        values
-    )
-
-    print(
-        f"PRF Retornou: {len(values)} registros | "
-        f"Novos inseridos: {inserted} | "
-        f"Ignorados: {len(values) - inserted}"
-    )
+    return inserted

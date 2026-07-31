@@ -1,14 +1,31 @@
-from prefect import flow
+import logging
+
+from prefect import flow, get_run_logger
 
 from src.transformations.create_hotspots import create_hotspots
 
 
-@flow(name="hotspot-detection")
-def hotspot_flow():
+def _get_logger():
+    try:
+        return get_run_logger()
+    except Exception:
+        return logging.getLogger(__name__)
 
-    create_hotspots()
+
+@flow(name="hotspot-detection", log_prints=True)
+def hotspot_flow():
+    logger = _get_logger()
+    logger.info("Iniciando flow hotspot-detection.")
+
+    try:
+        create_hotspots()
+        logger.info("Flow hotspot-detection concluído com sucesso.")
+
+    except Exception:
+        logger.exception("Erro no flow hotspot-detection.")
+        raise
 
 
 if __name__ == "__main__":
-
+    logging.basicConfig(level=logging.INFO)
     hotspot_flow()
