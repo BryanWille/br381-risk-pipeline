@@ -19,7 +19,7 @@ Este projeto resolve esse problema ao consolidar dados brutos, aplicar tratament
 
 A solução adota uma arquitetura inspirada no padrão **Medallion (Bronze → Silver → Gold)**, complementada por etapas de enriquecimento, feature engineering, inferência de risco e alertas. Esse padrão está alinhado às sugestões do trabalho e facilita modularidade, idempotência e separação de responsabilidades entre as camadas do pipeline.
 
-## Etapas do pipeline
+### Etapas do pipeline
 
 O pipeline foi estruturado como uma sequência de etapas encadeadas, em que cada fase prepara os dados para a próxima. Essa organização facilita a manutenção, reforça a modularidade do código e permite reexecução controlada das partes do fluxo, o que é importante para idempotência, resiliência e observabilidade.
 
@@ -94,18 +94,18 @@ flowchart TD
 
 ### Componentes principais
 
-- **Prefect Server**: interface e backend de orquestração, agendamento e observabilidade.[cite:1]
-- **Prefect Worker**: execução dos deployments e flows do projeto.[cite:1]
-- **PostgreSQL**: persistência das camadas de dados, tabelas auxiliares e auditoria.[cite:1]
-- **Docker Compose**: orquestração da stack local de serviços em containers.[cite:3]
+- **Prefect Server**: interface e backend de orquestração, agendamento e observabilidade.
+- **Prefect Worker**: execução dos deployments e flows do projeto.
+- **PostgreSQL**: persistência das camadas de dados, tabelas auxiliares e auditoria.
+- **Docker Compose**: orquestração da stack local de serviços em containers.
 
 ## Ferramentas utilizadas
 
 | Ferramenta | Papel no projeto | Justificativa |
 |---|---|---|
 | Prefect 3 | Orquestração de workflows | Permite modelar dependências, agendamento, retries, execução observável e UI de monitoramento, atendendo diretamente aos requisitos da disciplina. |
-| PostgreSQL | Persistência | Centraliza camadas Bronze/Silver/Gold, tabelas de apoio e histórico de execução com armazenamento relacional confiável.[cite:1] |
-| Docker Compose | Execução da stack | Permite subir o projeto do zero com um único comando, padronizando serviços, rede e volumes do ambiente.[cite:3][cite:1] |
+| PostgreSQL | Persistência | Centraliza camadas Bronze/Silver/Gold, tabelas de apoio e histórico de execução com armazenamento relacional confiável. |
+| Docker Compose | Execução da stack | Permite subir o projeto do zero com um único comando, padronizando serviços, rede e volumes do ambiente. |
 | Python | Implementação do pipeline | Linguagem principal para flows, ETL, integração com APIs, features e lógica de negócio. |
 | scikit-learn / joblib | Predição e serialização | Suporte ao uso e persistência de modelo de risco em ambiente operacional. |
 | Open-Meteo | Enriquecimento externo | Fornece dados meteorológicos usados na etapa de enrichment. |
@@ -149,7 +149,7 @@ flowchart TD
 
 ## Como executar o projeto do zero
 
-Esta seção foi pensada para permitir que o avaliador suba o projeto diretamente do repositório, como solicitado no trabalho.[cite:3]
+Esta seção foi pensada para permitir que o avaliador suba o projeto diretamente do repositório, como solicitado no trabalho.
 
 ### Pré-requisitos
 
@@ -169,7 +169,7 @@ cd br381-risk-pipeline
 docker compose up -d
 ```
 
-Esse comando sobe os serviços principais do projeto, incluindo PostgreSQL, Prefect Server e Prefect Worker, em containers isolados e conectados pela mesma rede Compose.[cite:3]
+Esse comando sobe os serviços principais do projeto, incluindo PostgreSQL, Prefect Server e Prefect Worker, em containers isolados e conectados pela mesma rede Compose.
 
 ### 3. Verificar se os containers estão ativos
 
@@ -265,7 +265,7 @@ O pipeline foi estruturado para suportar reexecução sem gerar duplicidade inde
 
 ### Por que Docker Compose
 
-Docker Compose foi adotado para tornar o ambiente reproduzível e simples de iniciar com `docker compose up`, exatamente como solicitado no trabalho. Além disso, ele facilita a padronização entre serviços, redes, volumes e startup da stack local.[cite:1][cite:3]
+Docker Compose foi adotado para tornar o ambiente reproduzível e simples de iniciar com `docker compose up`, exatamente como solicitado no trabalho. Além disso, ele facilita a padronização entre serviços, redes, volumes e startup da stack local.
 
 ## Evidências de funcionamento
 
@@ -287,4 +287,4 @@ Esses pontos ajudam a sustentar tanto a avaliação de pipeline funcionando quan
 
 ## Conclusão
 
-O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto busca equilibrar escopo realista, clareza arquitetural e capacidade de execução reproduzível a partir do repositório.[cite:3]
+O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto busca equilibrar escopo realista, clareza arquitetural e capacidade de execução reproduzível a partir do repositório.
