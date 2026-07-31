@@ -1,83 +1,34 @@
 # BR381 Risk Pipeline
 
-[![Prefect 3](https://img.shields.io/badge/Prefect-3-blue)](https://prefect.com)
-[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-enabled-blue)](https://docs.docker.com/compose/)
+[![Prefect 3](https://img.shields.io/badge/Prefect-3-2D6E7E?logo=prefect&logoColor=white)](https://prefect.com)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker Compose](https://img.shields.io/badge/Docker%20Compose-enabled-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
+[![Status](https://img.shields.io/badge/status-functional-brightgreen)]()
 
-## Visão geral
+> Um pipeline de dados orquestrado para transformar registros brutos de acidentes na BR-381 em risco calculado, hotspots identificados e alertas operacionais — do zero, com um único `docker compose up`.
 
-**BR381 Risk Pipeline** é um projeto de orquestração de workflows para monitoramento de risco de acidentes na rodovia BR-381. O pipeline automatiza ingestão, transformação, enriquecimento com dados meteorológicos, geração de features, cálculo de risco e envio de alertas, utilizando **Prefect 3** como orquestrador e **Docker Compose** para execução reproduzível do ambiente.
+---
 
-O projeto foi desenvolvido como trabalho final da disciplina de **Orquestração de Workflow**, com foco em um pipeline realista, modular, resiliente, idempotente e observável, próximo de um cenário profissional de dados e monitoramento operacional.
+## 🌎 Visão geral
 
-## Problema e contexto
+O **BR381 Risk Pipeline** é um sistema de orquestração de workflows voltado ao monitoramento de risco de acidentes na rodovia BR-381. Ele automatiza toda a esteira de dados: ingestão, limpeza, enriquecimento climático, geração de features, cálculo de risco e disparo de alertas — tudo coordenado pelo **Prefect 3** e executado de forma reproduzível via **Docker Compose**.
 
-A BR-381 é uma rodovia de alta relevância logística e historicamente associada a ocorrências rodoviárias e trechos críticos. Nesse contexto, o desafio não é apenas armazenar dados de acidentes, mas transformar múltiplas fontes em uma esteira automatizada capaz de produzir informação útil para análise e monitoramento contínuo.
+Este projeto foi desenvolvido como trabalho final da disciplina de **Orquestração de Workflow**, com foco em construir algo além de um exercício acadêmico: um pipeline modular, resiliente, idempotente e observável, que se aproxima de um cenário real de engenharia de dados aplicado à segurança viária.
 
-Este projeto resolve esse problema ao consolidar dados brutos, aplicar tratamento em camadas, enriquecer registros com clima, calcular indicadores e disponibilizar artefatos analíticos e operacionais. A escolha por um pipeline orquestrado é adequada porque o fluxo possui dependências entre etapas, necessidade de reexecução segura, persistência de resultados e acompanhamento de falhas e execuções.
+## 🧭 Problema e contexto
 
-## Arquitetura da solução
+A BR-381 é uma rodovia de altíssima relevância logística no Brasil, historicamente marcada por trechos críticos e alta recorrência de ocorrências. O desafio real aqui não é simplesmente armazenar registros de acidentes — é transformar múltiplas fontes de dados heterogêneas em uma esteira automatizada, capaz de gerar sinal analítico útil para monitoramento contínuo e tomada de decisão.
 
-A solução adota uma arquitetura inspirada no padrão **Medallion (Bronze → Silver → Gold)**, complementada por etapas de enriquecimento, feature engineering, inferência de risco e alertas. Esse padrão está alinhado às sugestões do trabalho e facilita modularidade, idempotência e separação de responsabilidades entre as camadas do pipeline.
+Este projeto ataca esse problema consolidando dados brutos, aplicando tratamento em camadas, enriquecendo registros com contexto climático, calculando indicadores de risco e disponibilizando artefatos analíticos e operacionais prontos para consumo. A escolha por um pipeline orquestrado — em vez de scripts soltos — se justifica porque o fluxo tem dependências claras entre etapas, exige reexecução segura, precisa persistir resultados de forma confiável e demanda visibilidade sobre falhas e execuções.
 
-### Etapas do pipeline
+## 🏗️ Arquitetura da solução
 
-O pipeline foi estruturado como uma sequência de etapas encadeadas, em que cada fase prepara os dados para a próxima. Essa organização facilita a manutenção, reforça a modularidade do código e permite reexecução controlada das partes do fluxo, o que é importante para idempotência, resiliência e observabilidade.
+A solução segue o padrão **Medallion (Bronze → Silver → Gold)**, estendido com etapas de enriquecimento, feature engineering, inferência de risco e alertas. Essa arquitetura favorece modularidade, idempotência e separação clara de responsabilidades entre as camadas do pipeline.
 
-### 1. Ingestão PRF
+### Como o pipeline flui
 
-Etapa responsável por coletar os dados brutos da fonte principal do projeto, relacionada aos registros da PRF. Nessa fase, o objetivo é capturar e persistir os dados de origem com o menor número possível de transformações, preservando rastreabilidade e permitindo reprocessamento posterior quando necessário.
-
-### 2. Camada Bronze
-
-Representa o primeiro nível de persistência do pipeline. Funciona como zona de aterrissagem dos dados ingeridos, armazenando registros brutos ou minimamente padronizados, de modo que a origem seja preservada e a auditoria do processo seja facilitada.
-
-### 3. Bronze → Silver
-
-Etapa em que os dados passam por limpeza, padronização, tipagem, validação e deduplicação. Aqui o pipeline transforma a base bruta em uma camada mais consistente, reduzindo ruídos e corrigindo problemas estruturais que dificultariam análises posteriores.
-
-### 4. Camada Silver
-
-Concentra dados já tratados e organizados estruturalmente. Essa camada serve como base confiável para enriquecimentos, cruzamentos e transformações analíticas mais elaboradas, funcionando como ponto intermediário entre a ingestão e o consumo analítico.
-
-### 5. Silver → Gold
-
-Fase de consolidação analítica. A partir dos dados refinados da Silver, o pipeline gera tabelas e estruturas orientadas ao consumo, com foco em indicadores, agregações e entidades que apoiam decisões e etapas de monitoramento.
-
-### 6. Camada Gold
-
-É a camada final de consumo analítico do projeto. Nela ficam os dados prontos para consulta e interpretação, sustentando a identificação de hotspots, a análise de risco e a produção de alertas.
-
-### 7. Detecção de hotspots
-
-Etapa responsável por identificar trechos críticos da BR-381 com base na concentração, recorrência ou intensidade de ocorrências. Essa fase transforma histórico consolidado em sinal analítico útil para priorização operacional e entendimento espacial do risco.
-
-### 8. Enriquecimento meteorológico
-
-Adiciona contexto externo aos dados processados, associando registros a condições climáticas relevantes. Esse enriquecimento amplia a capacidade analítica do pipeline, pois incorpora fatores ambientais que podem influenciar o comportamento do risco.
-
-### 9. Criação de features
-
-Converte dados tratados e enriquecidos em atributos adequados para análise preditiva. Nessa etapa são selecionadas, derivadas e organizadas variáveis que servirão de entrada para o cálculo e a predição de risco.
-
-### 10. Predição de risco histórico
-
-Aplica a lógica analítica ou o modelo de risco sobre os dados históricos preparados. O resultado é uma visão estruturada da criticidade observada ao longo do tempo, ajudando a transformar o histórico em informação acionável.
-
-### 11. Risco atual
-
-Produz uma visão operacional mais recente do cenário monitorado. Essa etapa consolida os dados mais atualizados do pipeline para apoiar acompanhamento contínuo e leitura quase em tempo real do risco.
-
-### 12. Alertas
-
-Etapa final do fluxo, responsável por transformar resultado analítico em ação. Quando determinados limiares configurados são atingidos, o sistema registra e envia notificações, permitindo resposta mais rápida a condições críticas.
-
-### Papel da orquestração
-
-O Prefect coordena a ordem de execução dessas etapas, garantindo que cada fase só seja executada quando suas dependências estiverem satisfeitas. Além disso, centraliza agendamento, retries, monitoramento e rastreabilidade das execuções, tornando o pipeline mais confiável e observável.
-
-### Relação com a arquitetura medalhão
-
-A organização em camadas **Bronze**, **Silver** e **Gold** aproxima o projeto do padrão de arquitetura medalhão. Esse desenho facilita a separação entre dados brutos, dados tratados e dados prontos para consumo, além de fortalecer modularidade, persistência e reprocessamento seguro.
+Cada etapa prepara o terreno para a próxima — nada acontece isoladamente. Essa organização em cadeia facilita manutenção, reforça modularidade e permite reexecutar partes específicas do fluxo sem comprometer o restante, o que é essencial para resiliência e observabilidade.
 
 ```mermaid
 flowchart TD
@@ -92,26 +43,68 @@ flowchart TD
     I --> J[Alertas]
 ```
 
+#### 1. Ingestão PRF
+Coleta os dados brutos da fonte principal do projeto — os registros oficiais da Polícia Rodoviária Federal. O objetivo aqui é capturar e persistir os dados de origem com o mínimo de transformação possível, preservando rastreabilidade e viabilizando reprocessamento posterior.
+
+#### 2. Camada Bronze
+Primeiro nível de persistência do pipeline. Funciona como zona de aterrissagem, guardando os registros brutos (ou minimamente padronizados) de forma que a origem fique preservada e a auditoria seja simples.
+
+#### 3. Bronze → Silver
+Aqui acontece a faxina: limpeza, padronização, tipagem, validação e deduplicação. A base bruta vira uma camada consistente, com ruídos reduzidos e problemas estruturais corrigidos antes de qualquer análise.
+
+#### 4. Camada Silver
+Concentra dados já tratados e organizados estruturalmente. Serve como base confiável para enriquecimentos e cruzamentos mais elaborados — o ponto intermediário entre "dado bruto" e "dado pronto para análise".
+
+#### 5. Silver → Gold
+Fase de consolidação analítica. A partir dos dados refinados da Silver, o pipeline gera tabelas orientadas ao consumo: indicadores, agregações e entidades que sustentam decisões e etapas de monitoramento.
+
+#### 6. Camada Gold
+Camada final de consumo analítico. Aqui ficam os dados prontos para consulta e interpretação — a base que sustenta a detecção de hotspots, o cálculo de risco e a geração de alertas.
+
+#### 7. Detecção de hotspots
+Identifica trechos críticos da BR-381 a partir da concentração, recorrência ou intensidade de ocorrências. Transforma histórico consolidado em sinal analítico útil para priorização operacional e leitura espacial do risco.
+
+#### 8. Enriquecimento meteorológico
+Adiciona contexto externo aos dados processados, cruzando registros com condições climáticas relevantes. Isso amplia a capacidade analítica do pipeline, incorporando fatores ambientais que influenciam diretamente o risco.
+
+#### 9. Criação de features
+Converte dados tratados e enriquecidos em atributos prontos para análise preditiva — as variáveis de entrada que alimentam o cálculo e a predição de risco.
+
+#### 10. Predição de risco histórico
+Aplica a lógica analítica (ou modelo) sobre os dados históricos preparados, gerando uma visão estruturada da criticidade observada ao longo do tempo.
+
+#### 11. Risco atual
+Consolida a visão operacional mais recente do cenário monitorado, dando suporte a um acompanhamento praticamente em tempo real.
+
+#### 12. Alertas
+Etapa final: transforma resultado analítico em ação. Quando limiares configurados são atingidos, o sistema registra e envia notificações, permitindo resposta rápida a condições críticas. 🚨
+
+### Papel da orquestração
+
+O Prefect coordena a ordem de execução de todas essas etapas, garantindo que cada fase só rode quando suas dependências estiverem satisfeitas. Ele também centraliza agendamento, retries, monitoramento e rastreabilidade — o que torna o pipeline confiável mesmo diante de falhas transitórias.
+
 ### Componentes principais
 
-- **Prefect Server**: interface e backend de orquestração, agendamento e observabilidade.
-- **Prefect Worker**: execução dos deployments e flows do projeto.
-- **PostgreSQL**: persistência das camadas de dados, tabelas auxiliares e auditoria.
-- **Docker Compose**: orquestração da stack local de serviços em containers.
+| Componente | Papel |
+|---|---|
+| **Prefect Server** | Interface e backend de orquestração, agendamento e observabilidade |
+| **Prefect Worker** | Executa os deployments e flows do projeto |
+| **PostgreSQL** | Persiste as camadas Bronze/Silver/Gold, tabelas auxiliares e auditoria |
+| **Docker Compose** | Orquestra a stack local de serviços em containers |
 
-## Ferramentas utilizadas
+## 🛠️ Ferramentas utilizadas
 
 | Ferramenta | Papel no projeto | Justificativa |
 |---|---|---|
-| Prefect 3 | Orquestração de workflows | Permite modelar dependências, agendamento, retries, execução observável e UI de monitoramento, atendendo diretamente aos requisitos da disciplina. |
-| PostgreSQL | Persistência | Centraliza camadas Bronze/Silver/Gold, tabelas de apoio e histórico de execução com armazenamento relacional confiável. |
-| Docker Compose | Execução da stack | Permite subir o projeto do zero com um único comando, padronizando serviços, rede e volumes do ambiente. |
-| Python | Implementação do pipeline | Linguagem principal para flows, ETL, integração com APIs, features e lógica de negócio. |
-| scikit-learn / joblib | Predição e serialização | Suporte ao uso e persistência de modelo de risco em ambiente operacional. |
-| Open-Meteo | Enriquecimento externo | Fornece dados meteorológicos usados na etapa de enrichment. |
-| Telegram | Notificação | Canal simples para alertas operacionais baseados em limiares. |
+| **Prefect 3** | Orquestração de workflows | Modela dependências, agendamento, retries e execução observável com UI de monitoramento nativa |
+| **PostgreSQL** | Persistência | Centraliza camadas Bronze/Silver/Gold e histórico de execução com armazenamento relacional confiável |
+| **Docker Compose** | Execução da stack | Sobe o projeto do zero com um único comando, padronizando serviços, rede e volumes |
+| **Python** | Implementação do pipeline | Linguagem principal para flows, ETL, integração com APIs e regras de negócio |
+| **scikit-learn / joblib** | Predição e serialização | Suporte ao uso e persistência do modelo de risco em ambiente operacional |
+| **Open-Meteo** | Enriquecimento externo | Fornece os dados meteorológicos usados na etapa de enrichment |
+| **Telegram** | Notificação | Canal simples e direto para alertas operacionais baseados em limiares |
 
-## Estrutura do repositório
+## 📂 Estrutura do repositório
 
 ```text
 .
@@ -135,21 +128,21 @@ flowchart TD
 └── README.md
 ```
 
-### Pastas principais
+| Pasta | Conteúdo |
+|---|---|
+| `src/flows/` | Definição dos flows orquestrados no Prefect |
+| `src/database/` | Inicialização do banco, repositórios e persistência |
+| `src/config/` | Configuração e variáveis do projeto |
+| `src/transformations/` | Regras de transformação entre camadas |
+| `src/weather/` | Enriquecimento meteorológico |
+| `src/ml/` | Criação de features e inferência de risco |
+| `sql/` | Criação e manutenção de schemas e tabelas |
+| `models/` | Artefatos de modelo serializados |
+| `logs/` | Registros auxiliares de execução |
 
-- `src/flows/` — definição dos flows orquestrados no Prefect.
-- `src/database/` — inicialização do banco, repositórios e persistência.
-- `src/config/` — configuração e variáveis do Prefect.
-- `src/transformations/` — regras de transformação entre camadas.
-- `src/weather/` — enriquecimento meteorológico.
-- `src/ml/` — criação de features e inferência de risco.
-- `sql/` — criação e manutenção de schemas e tabelas.
-- `models/` — artefatos de modelo.
-- `logs/` — registros auxiliares de execução.
+## 🚀 Como executar o projeto do zero
 
-## Como executar o projeto do zero
-
-Esta seção foi pensada para permitir que o avaliador suba o projeto diretamente do repositório, como solicitado no trabalho.
+Esta seção foi pensada para que qualquer avaliador consiga subir o projeto diretamente do repositório, sem passos escondidos.
 
 ### Pré-requisitos
 
@@ -169,13 +162,15 @@ cd br381-risk-pipeline
 docker compose up -d
 ```
 
-Esse comando sobe os serviços principais do projeto, incluindo PostgreSQL, Prefect Server e Prefect Worker, em containers isolados e conectados pela mesma rede Compose.
+Esse comando sobe PostgreSQL, Prefect Server e Prefect Worker em containers isolados, conectados pela mesma rede Compose. Na primeira subida, o worker também inicializa o banco e registra os deployments automaticamente.
 
 ### 3. Verificar se os containers estão ativos
 
 ```bash
 docker compose ps
 ```
+
+<img width="1845" height="182" alt="image" src="https://github.com/user-attachments/assets/cfc2fe07-db29-4fac-8c5e-ea64837f818c" />
 
 ### 4. Acompanhar logs
 
@@ -187,17 +182,23 @@ docker compose logs -f postgres
 
 ### 5. Acessar a interface do Prefect
 
-Abra no navegador:
-
 ```text
 http://localhost:4200
 ```
+
+> 📸 *Print: Prefect UI com os flows/deployments visíveis*
+>
+> _[espaço reservado para screenshot]_
 
 ### 6. Validar se os deployments foram registrados
 
 ```bash
 docker exec -e PREFECT_API_URL=http://prefect-server:4200/api -it br381-prefect-worker prefect deployment ls
 ```
+
+> 📸 *Print: saída do `prefect deployment ls`*
+>
+> _[espaço reservado para screenshot]_
 
 ### 7. Executar um deployment manualmente
 
@@ -211,80 +212,126 @@ ou
 docker exec -e PREFECT_API_URL=http://prefect-server:4200/api -it br381-prefect-worker prefect deployment run "current-monitoring/br381-monitoring"
 ```
 
+<img width="1842" height="883" alt="image" src="https://github.com/user-attachments/assets/9253df05-2b97-4b4b-88bc-101234aa49fc" />
+
+
 ### 8. Consultar tabelas no PostgreSQL
 
-Exemplo para inspecionar uma tabela:
+Inspecionar uma tabela:
 
 ```bash
 docker exec -it br381-postgres psql -U br381 -d br381 -c "\d+ silver.weather_cache"
 ```
 
-Exemplo para contar registros:
+Contar registros:
 
 ```bash
 docker exec -it br381-postgres psql -U br381 -d br381 -c "SELECT COUNT(*) AS total_rows FROM silver.weather_cache;"
 ```
+<img width="1333" height="984" alt="image" src="https://github.com/user-attachments/assets/b16111d1-61b6-44f8-ab20-429e53922299" />
 
-## Deployments do Prefect
 
-O projeto define dois deployments principais no `prefect.yaml`:
+## ⏱️ Deployments do Prefect
 
 | Deployment | Entrypoint | Frequência |
 |---|---|---|
 | `br381-daily` | `src/flows/pipeline_flow.py:br381_pipeline` | diariamente às 06:00 (`America/Sao_Paulo`) |
 | `br381-monitoring` | `src/flows/current_monitoring_flow.py:current_monitoring` | a cada hora (`America/Sao_Paulo`) |
 
-Esses deployments implementam o requisito de **agendamento/trigger** exigido no trabalho, permitindo tanto execução automática quanto disparo manual via CLI ou UI do Prefect.
+Esses deployments implementam o requisito de **agendamento/trigger** do trabalho, permitindo tanto execução automática via cron quanto disparo manual via CLI ou UI do Prefect.
 
-## Requisitos mínimos atendidos
+## ⚙️ Configurações customizáveis
 
-Esta seção conecta explicitamente o projeto aos requisitos mínimos definidos no enunciado.
+O pipeline expõe um conjunto de parâmetros de negócio como **Prefect Variables**, o que permite ajustar o comportamento do sistema de risco e alertas **sem precisar alterar código ou fazer novo deploy**. Essas variáveis ficam centralizadas em `src/config/risk_config.py` e podem ser lidas e sobrescritas diretamente pela UI do Prefect (`Variables`) ou via CLI.
+
+```python
+from prefect.variables import Variable
+
+
+def get_high_risk_threshold():
+    return float(Variable.get("high_risk_threshold", default=0.35))
+
+
+def get_medium_risk_threshold():
+    return float(Variable.get("medium_risk_threshold", default=0.15))
+
+
+def get_telegram_alert_threshold():
+    return float(Variable.get("telegram_alert_threshold", default=0.60))
+
+
+def get_telegram_alert_enabled():
+    value = Variable.get("telegram_alert_enabled", default=True)
+    return bool(value)
+
+
+def get_hotspots_limit():
+    value = Variable.get("hotspots_limit", default=10)
+    return int(value)
+```
+
+| Variável | Default | Papel |
+|---|---|---|
+| `high_risk_threshold` | `0.35` | Limiar acima do qual um trecho é classificado como **alto risco** |
+| `medium_risk_threshold` | `0.15` | Limiar acima do qual um trecho é classificado como **risco médio** |
+| `telegram_alert_threshold` | `0.60` | Limiar mínimo de risco para disparar um **alerta no Telegram** |
+| `telegram_alert_enabled` | `True` | Liga/desliga o envio de alertas via Telegram, sem tocar em código |
+| `hotspots_limit` | `10` | Quantidade máxima de hotspots retornados na etapa de detecção |
+
+Como essas configurações usam `Variable.get(..., default=...)`, o pipeline sempre tem um valor de fallback seguro mesmo se a variável nunca tiver sido criada — mas basta ajustar o valor na UI do Prefect para o próximo run já refletir a mudança, sem redeploy. 🔧
+
+<img width="1813" height="620" alt="image" src="https://github.com/user-attachments/assets/e03896fb-5c1e-4fb2-b0b7-3d0eee672913" />
+
+
+## ✅ Requisitos mínimos atendidos
 
 | Requisito | Como o projeto atende |
 |---|---|
-| Agendamento ou trigger | Deployments agendados no Prefect e possibilidade de execução manual |
+| Agendamento ou trigger | Deployments agendados no Prefect + execução manual disponível |
 | Resiliência | Flows com retries e tratamento explícito de falhas |
-| Idempotência | Estratégias de upsert, deduplicação e reexecução segura das camadas |
-| Modularidade | Código organizado em flows, módulos de transformação, banco, clima, ML e alertas |
+| Idempotência | Upsert, deduplicação e reexecução segura das camadas |
+| Modularidade | Código organizado em flows, transformação, banco, clima, ML e alertas |
 | Persistência | Dados e metadados gravados no PostgreSQL |
 | Observabilidade | Prefect UI, logs de containers e tabelas de auditoria |
 
-## Decisões técnicas relevantes
+## 🧠 Decisões técnicas relevantes
 
 ### Por que Prefect e não Airflow
 
-Prefect foi escolhido por oferecer uma experiência mais simples para modelagem de flows Python-first, com boa observabilidade local, suporte nativo a retries, deployments e execução distribuída com worker. Para este projeto, isso reduziu a complexidade operacional sem abrir mão dos requisitos centrais da disciplina.
+O Prefect foi escolhido por oferecer uma experiência Python-first mais simples para modelar flows, com boa observabilidade local, suporte nativo a retries, deployments e execução distribuída via worker. Para este projeto, isso reduziu a complexidade operacional sem abrir mão dos requisitos centrais da disciplina.
 
 ### Por que arquitetura Bronze → Silver → Gold
 
-A separação em camadas melhora rastreabilidade, organização e reprocessamento seguro. Dados brutos são preservados na Bronze, limpeza e padronização ficam concentradas na Silver, e os dados prontos para consumo analítico vão para a Gold, o que reforça idempotência e modularidade.
+A separação em camadas melhora rastreabilidade, organização e reprocessamento seguro. Dados brutos ficam preservados na Bronze, a limpeza e padronização se concentram na Silver, e os dados prontos para consumo analítico vão para a Gold — reforçando idempotência e modularidade em cada etapa.
 
 ### Estratégia de idempotência
 
-O pipeline foi estruturado para suportar reexecução sem gerar duplicidade indevida. Isso é importante porque o trabalho exige que o pipeline possa ser rerodado de maneira segura, especialmente em cenários com agendamento periódico e falhas transitórias.
+O pipeline foi estruturado para suportar reexecução sem gerar duplicidade indevida. Isso é essencial porque o projeto exige que o pipeline possa ser rerodado com segurança, especialmente em cenários de agendamento periódico e falhas transitórias.
 
 ### Por que Docker Compose
 
-Docker Compose foi adotado para tornar o ambiente reproduzível e simples de iniciar com `docker compose up`, exatamente como solicitado no trabalho. Além disso, ele facilita a padronização entre serviços, redes, volumes e startup da stack local.
+O Docker Compose tornou o ambiente reproduzível e simples de iniciar com um único `docker compose up`, exatamente como pedido no trabalho. Ele também padroniza serviços, redes, volumes e o startup completo da stack local — sem depender de configuração manual.
 
-## Evidências de funcionamento
+## 📊 Evidências de funcionamento
 
-Para demonstrar que o pipeline está funcional, podem ser verificadas as seguintes evidências:
+Para comprovar que o pipeline está funcional, é possível verificar:
 
 - status dos containers com `docker compose ps`;
 - deployments e runs visíveis no Prefect UI;
-- logs do worker e do server;
-- tabelas alimentadas no PostgreSQL;
-- execução manual de deployments e acompanhamento do estado dos runs.
+- logs do worker e do server sem erros de módulo ou conexão;
+- tabelas Bronze/Silver/Gold alimentadas no PostgreSQL;
+- execução manual de deployments com acompanhamento do estado dos runs em tempo real;
+- alerta recebido no Telegram quando o risco ultrapassa o threshold configurado.
 
-Esses pontos ajudam a sustentar tanto a avaliação de pipeline funcionando quanto a demonstração no pitch em vídeo.
+<img width="1417" height="903" alt="image" src="https://github.com/user-attachments/assets/8fb8b71d-1dbd-4db6-89ed-2d9892ea1490" />
 
-## Pitch em vídeo
 
-### Link do vídeo
+Esses pontos sustentam tanto a avaliação de "pipeline funcionando" quanto a demonstração no pitch em vídeo.
+
+## 🎬 Pitch em vídeo
 
 > Adicionar aqui o link do pitch e as instruções de acesso.
 
-## Conclusão
+## 🏁 Conclusão
 
-O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto busca equilibrar escopo realista, clareza arquitetural e capacidade de execução reproduzível a partir do repositório.
+O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto equilibra escopo realista, clareza arquitetural e capacidade de execução reproduzível — do clone ao pipeline rodando, em poucos comandos.
