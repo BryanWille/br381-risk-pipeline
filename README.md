@@ -185,10 +185,8 @@ docker compose logs -f postgres
 ```text
 http://localhost:4200
 ```
+<img width="1853" height="831" alt="image" src="https://github.com/user-attachments/assets/2d57c219-5e22-4e5e-967a-a4514691c151" />
 
-> 📸 *Print: Prefect UI com os flows/deployments visíveis*
->
-> _[espaço reservado para screenshot]_
 
 ### 6. Validar se os deployments foram registrados
 
@@ -196,9 +194,8 @@ http://localhost:4200
 docker exec -e PREFECT_API_URL=http://prefect-server:4200/api -it br381-prefect-worker prefect deployment ls
 ```
 
-> 📸 *Print: saída do `prefect deployment ls`*
->
-> _[espaço reservado para screenshot]_
+<img width="1892" height="220" alt="image" src="https://github.com/user-attachments/assets/1d923e04-bfdb-4d1c-850a-189c0639174d" />
+
 
 ### 7. Executar um deployment manualmente
 
