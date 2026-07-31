@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:16
     container_name: br381-postgres
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: br381
       POSTGRES_PASSWORD: br381
@@ -11,18 +11,73 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U br381 -d br381"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - br381-net
 
-  prefect:
+  prefect-server:
     image: prefecthq/prefect:3-latest
-    container_name: br381-prefect
-    restart: always
+    container_name: br381-prefect-server
+    restart: unless-stopped
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     environment:
       PREFECT_API_DATABASE_CONNECTION_URL: postgresql+asyncpg://br381:br381@postgres:5432/br381
+      PREFECT_SERVER_API_HOST: 0.0.0.0
+      PREFECT_UI_API_URL: http://localhost:4200/api
     ports:
       - "4200:4200"
     command: prefect server start --host 0.0.0.0
+    networks:
+      - br381-net
+
+  prefect-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: br381-prefect-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      prefect-server:
+        condition: service_started
+    working_dir: /app
+    environment:
+      PREFECT_API_URL: http://prefect-server:4200/api
+      PREFECT_CLI_PROMPT: "False"
+      PYTHONPATH: /app
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: br381
+      DB_USER: br381
+      DB_PASSWORD: br381
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: br381
+      POSTGRES_USER: br381
+      POSTGRES_PASSWORD: br381
+    volumes:
+      - ./:/app
+    command: >
+      bash -c "
+      until curl -sf http://prefect-server:4200/api/health; do sleep 2; done;
+      python3 -m src.database.init_db;
+      python3 -m src.config.prefect_variables;
+      prefect --no-prompt deploy --all;
+      prefect worker start --pool br381-pool
+      "
+    networks:
+      - br381-net
+
+networks:
+  br381-net:
+    driver: bridge
 
 volumes:
   postgres_data:
