@@ -5,31 +5,79 @@
 
 ## Visão geral
 
-**BR381 Risk Pipeline** é um projeto de orquestração de workflows para monitoramento de risco de acidentes na rodovia BR-381. O pipeline automatiza ingestão, transformação, enriquecimento com dados meteorológicos, geração de features, cálculo de risco e envio de alertas, utilizando **Prefect 3** como orquestrador e **Docker Compose** para execução reproduzível do ambiente.[cite:1][cite:2]
+**BR381 Risk Pipeline** é um projeto de orquestração de workflows para monitoramento de risco de acidentes na rodovia BR-381. O pipeline automatiza ingestão, transformação, enriquecimento com dados meteorológicos, geração de features, cálculo de risco e envio de alertas, utilizando **Prefect 3** como orquestrador e **Docker Compose** para execução reproduzível do ambiente.
 
-O projeto foi desenvolvido como trabalho final da disciplina de **Orquestração de Workflow**, com foco em um pipeline realista, modular, resiliente, idempotente e observável, próximo de um cenário profissional de dados e monitoramento operacional.[cite:1][cite:2]
+O projeto foi desenvolvido como trabalho final da disciplina de **Orquestração de Workflow**, com foco em um pipeline realista, modular, resiliente, idempotente e observável, próximo de um cenário profissional de dados e monitoramento operacional.
 
 ## Problema e contexto
 
-A BR-381 é uma rodovia de alta relevância logística e historicamente associada a ocorrências rodoviárias e trechos críticos. Nesse contexto, o desafio não é apenas armazenar dados de acidentes, mas transformar múltiplas fontes em uma esteira automatizada capaz de produzir informação útil para análise e monitoramento contínuo.[cite:1][cite:2]
+A BR-381 é uma rodovia de alta relevância logística e historicamente associada a ocorrências rodoviárias e trechos críticos. Nesse contexto, o desafio não é apenas armazenar dados de acidentes, mas transformar múltiplas fontes em uma esteira automatizada capaz de produzir informação útil para análise e monitoramento contínuo.
 
-Este projeto resolve esse problema ao consolidar dados brutos, aplicar tratamento em camadas, enriquecer registros com clima, calcular indicadores e disponibilizar artefatos analíticos e operacionais. A escolha por um pipeline orquestrado é adequada porque o fluxo possui dependências entre etapas, necessidade de reexecução segura, persistência de resultados e acompanhamento de falhas e execuções.[cite:1][cite:2]
+Este projeto resolve esse problema ao consolidar dados brutos, aplicar tratamento em camadas, enriquecer registros com clima, calcular indicadores e disponibilizar artefatos analíticos e operacionais. A escolha por um pipeline orquestrado é adequada porque o fluxo possui dependências entre etapas, necessidade de reexecução segura, persistência de resultados e acompanhamento de falhas e execuções.
 
 ## Arquitetura da solução
 
-A solução adota uma arquitetura inspirada no padrão **Medallion (Bronze → Silver → Gold)**, complementada por etapas de enriquecimento, feature engineering, inferência de risco e alertas. Esse padrão está alinhado às sugestões do trabalho e facilita modularidade, idempotência e separação de responsabilidades entre as camadas do pipeline.[cite:1][cite:2]
+A solução adota uma arquitetura inspirada no padrão **Medallion (Bronze → Silver → Gold)**, complementada por etapas de enriquecimento, feature engineering, inferência de risco e alertas. Esse padrão está alinhado às sugestões do trabalho e facilita modularidade, idempotência e separação de responsabilidades entre as camadas do pipeline.
 
 ### Etapas do pipeline
 
-1. **Ingestão PRF** — coleta e carga dos dados brutos.
-2. **Bronze → Silver** — limpeza, tipagem, padronização e deduplicação.
-3. **Silver → Gold** — consolidação analítica.
-4. **Detecção de hotspots** — identificação de trechos críticos.
-5. **Enriquecimento meteorológico** — associação com condições de clima.
-6. **Criação de features** — preparação para análise/predição.
-7. **Predição de risco histórico** — cálculo de risco sobre base tratada.
-8. **Risco atual** — visão operacional mais recente.
-9. **Alertas** — notificação com base em limiares configurados.
+O pipeline foi estruturado como uma sequência de etapas encadeadas, em que cada fase prepara os dados para a próxima. Essa organização facilita a manutenção, reforça a modularidade do código e permite reexecução controlada das partes do fluxo, o que é importante para idempotência, resiliência e observabilidade.
+
+## 1. Ingestão PRF
+
+Etapa responsável por coletar os dados brutos da fonte principal do projeto, relacionada aos registros da PRF. Nessa fase, o objetivo é capturar e persistir os dados de origem com o menor número possível de transformações, preservando rastreabilidade e permitindo reprocessamento posterior quando necessário.
+
+## 2. Camada Bronze
+
+Representa o primeiro nível de persistência do pipeline. Funciona como zona de aterrissagem dos dados ingeridos, armazenando registros brutos ou minimamente padronizados, de modo que a origem seja preservada e a auditoria do processo seja facilitada.
+
+## 3. Bronze → Silver
+
+Etapa em que os dados passam por limpeza, padronização, tipagem, validação e deduplicação. Aqui o pipeline transforma a base bruta em uma camada mais consistente, reduzindo ruídos e corrigindo problemas estruturais que dificultariam análises posteriores.
+
+## 4. Camada Silver
+
+Concentra dados já tratados e organizados estruturalmente. Essa camada serve como base confiável para enriquecimentos, cruzamentos e transformações analíticas mais elaboradas, funcionando como ponto intermediário entre a ingestão e o consumo analítico.
+
+## 5. Silver → Gold
+
+Fase de consolidação analítica. A partir dos dados refinados da Silver, o pipeline gera tabelas e estruturas orientadas ao consumo, com foco em indicadores, agregações e entidades que apoiam decisões e etapas de monitoramento.
+
+## 6. Camada Gold
+
+É a camada final de consumo analítico do projeto. Nela ficam os dados prontos para consulta e interpretação, sustentando a identificação de hotspots, a análise de risco e a produção de alertas.
+
+## 7. Detecção de hotspots
+
+Etapa responsável por identificar trechos críticos da BR-381 com base na concentração, recorrência ou intensidade de ocorrências. Essa fase transforma histórico consolidado em sinal analítico útil para priorização operacional e entendimento espacial do risco.
+
+## 8. Enriquecimento meteorológico
+
+Adiciona contexto externo aos dados processados, associando registros a condições climáticas relevantes. Esse enriquecimento amplia a capacidade analítica do pipeline, pois incorpora fatores ambientais que podem influenciar o comportamento do risco.
+
+## 9. Criação de features
+
+Converte dados tratados e enriquecidos em atributos adequados para análise preditiva. Nessa etapa são selecionadas, derivadas e organizadas variáveis que servirão de entrada para o cálculo e a predição de risco.
+
+## 10. Predição de risco histórico
+
+Aplica a lógica analítica ou o modelo de risco sobre os dados históricos preparados. O resultado é uma visão estruturada da criticidade observada ao longo do tempo, ajudando a transformar o histórico em informação acionável.
+
+## 11. Risco atual
+
+Produz uma visão operacional mais recente do cenário monitorado. Essa etapa consolida os dados mais atualizados do pipeline para apoiar acompanhamento contínuo e leitura quase em tempo real do risco.
+
+## 12. Alertas
+
+Etapa final do fluxo, responsável por transformar resultado analítico em ação. Quando determinados limiares configurados são atingidos, o sistema registra e envia notificações, permitindo resposta mais rápida a condições críticas.
+
+### Papel da orquestração
+
+O Prefect coordena a ordem de execução dessas etapas, garantindo que cada fase só seja executada quando suas dependências estiverem satisfeitas. Além disso, centraliza agendamento, retries, monitoramento e rastreabilidade das execuções, tornando o pipeline mais confiável e observável.
+
+### Relação com a arquitetura medalhão
+
+A organização em camadas **Bronze**, **Silver** e **Gold** aproxima o projeto do padrão de arquitetura medalhão. Esse desenho facilita a separação entre dados brutos, dados tratados e dados prontos para consumo, além de fortalecer modularidade, persistência e reprocessamento seguro.
 
 ```mermaid
 flowchart TD
@@ -55,7 +103,7 @@ flowchart TD
 
 | Ferramenta | Papel no projeto | Justificativa |
 |---|---|---|
-| Prefect 3 | Orquestração de workflows | Permite modelar dependências, agendamento, retries, execução observável e UI de monitoramento, atendendo diretamente aos requisitos da disciplina.[cite:1][cite:2] |
+| Prefect 3 | Orquestração de workflows | Permite modelar dependências, agendamento, retries, execução observável e UI de monitoramento, atendendo diretamente aos requisitos da disciplina. |
 | PostgreSQL | Persistência | Centraliza camadas Bronze/Silver/Gold, tabelas de apoio e histórico de execução com armazenamento relacional confiável.[cite:1] |
 | Docker Compose | Execução da stack | Permite subir o projeto do zero com um único comando, padronizando serviços, rede e volumes do ambiente.[cite:3][cite:1] |
 | Python | Implementação do pipeline | Linguagem principal para flows, ETL, integração com APIs, features e lógica de negócio. |
@@ -101,7 +149,7 @@ flowchart TD
 
 ## Como executar o projeto do zero
 
-Esta seção foi pensada para permitir que o avaliador suba o projeto diretamente do repositório, como solicitado no trabalho.[cite:1][cite:2][cite:3]
+Esta seção foi pensada para permitir que o avaliador suba o projeto diretamente do repositório, como solicitado no trabalho.[cite:3]
 
 ### Pré-requisitos
 
@@ -186,11 +234,11 @@ O projeto define dois deployments principais no `prefect.yaml`:
 | `br381-daily` | `src/flows/pipeline_flow.py:br381_pipeline` | diariamente às 06:00 (`America/Sao_Paulo`) |
 | `br381-monitoring` | `src/flows/current_monitoring_flow.py:current_monitoring` | a cada hora (`America/Sao_Paulo`) |
 
-Esses deployments implementam o requisito de **agendamento/trigger** exigido no trabalho, permitindo tanto execução automática quanto disparo manual via CLI ou UI do Prefect.[cite:1][cite:2]
+Esses deployments implementam o requisito de **agendamento/trigger** exigido no trabalho, permitindo tanto execução automática quanto disparo manual via CLI ou UI do Prefect.
 
 ## Requisitos mínimos atendidos
 
-Esta seção conecta explicitamente o projeto aos requisitos mínimos definidos no enunciado.[cite:1][cite:2]
+Esta seção conecta explicitamente o projeto aos requisitos mínimos definidos no enunciado.
 
 | Requisito | Como o projeto atende |
 |---|---|
@@ -205,15 +253,15 @@ Esta seção conecta explicitamente o projeto aos requisitos mínimos definidos 
 
 ### Por que Prefect e não Airflow
 
-Prefect foi escolhido por oferecer uma experiência mais simples para modelagem de flows Python-first, com boa observabilidade local, suporte nativo a retries, deployments e execução distribuída com worker. Para este projeto, isso reduziu a complexidade operacional sem abrir mão dos requisitos centrais da disciplina.[cite:1][cite:2]
+Prefect foi escolhido por oferecer uma experiência mais simples para modelagem de flows Python-first, com boa observabilidade local, suporte nativo a retries, deployments e execução distribuída com worker. Para este projeto, isso reduziu a complexidade operacional sem abrir mão dos requisitos centrais da disciplina.
 
 ### Por que arquitetura Bronze → Silver → Gold
 
-A separação em camadas melhora rastreabilidade, organização e reprocessamento seguro. Dados brutos são preservados na Bronze, limpeza e padronização ficam concentradas na Silver, e os dados prontos para consumo analítico vão para a Gold, o que reforça idempotência e modularidade.[cite:1][cite:2]
+A separação em camadas melhora rastreabilidade, organização e reprocessamento seguro. Dados brutos são preservados na Bronze, limpeza e padronização ficam concentradas na Silver, e os dados prontos para consumo analítico vão para a Gold, o que reforça idempotência e modularidade.
 
 ### Estratégia de idempotência
 
-O pipeline foi estruturado para suportar reexecução sem gerar duplicidade indevida. Isso é importante porque o trabalho exige que o pipeline possa ser rerodado de maneira segura, especialmente em cenários com agendamento periódico e falhas transitórias.[cite:1][cite:2]
+O pipeline foi estruturado para suportar reexecução sem gerar duplicidade indevida. Isso é importante porque o trabalho exige que o pipeline possa ser rerodado de maneira segura, especialmente em cenários com agendamento periódico e falhas transitórias.
 
 ### Por que Docker Compose
 
@@ -229,19 +277,9 @@ Para demonstrar que o pipeline está funcional, podem ser verificadas as seguint
 - tabelas alimentadas no PostgreSQL;
 - execução manual de deployments e acompanhamento do estado dos runs.
 
-Esses pontos ajudam a sustentar tanto a avaliação de pipeline funcionando quanto a demonstração no pitch em vídeo.[cite:1][cite:2]
+Esses pontos ajudam a sustentar tanto a avaliação de pipeline funcionando quanto a demonstração no pitch em vídeo.
 
 ## Pitch em vídeo
-
-O enunciado exige um pitch de 5 a 10 minutos com demonstração do projeto rodando, arquitetura e decisões técnicas.[cite:1][cite:2]
-
-O vídeo deve mostrar, no mínimo:
-
-- o problema resolvido pelo pipeline;
-- a arquitetura escolhida;
-- uma execução real do pipeline;
-- a interface do Prefect acompanhando os runs;
-- as principais decisões técnicas adotadas.
 
 ### Link do vídeo
 
@@ -249,4 +287,4 @@ O vídeo deve mostrar, no mínimo:
 
 ## Conclusão
 
-O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto busca equilibrar escopo realista, clareza arquitetural e capacidade de execução reproduzível a partir do repositório.[cite:1][cite:2][cite:3]
+O **BR381 Risk Pipeline** foi estruturado para atender aos objetivos técnicos e avaliativos do trabalho final de Orquestração de Workflow, combinando orquestração com Prefect, persistência em PostgreSQL, execução dockerizada e uma arquitetura de dados em camadas. O projeto busca equilibrar escopo realista, clareza arquitetural e capacidade de execução reproduzível a partir do repositório.[cite:3]
