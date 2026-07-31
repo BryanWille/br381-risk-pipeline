@@ -66,9 +66,11 @@ services:
       - ./:/app
     command: >
       bash -c "
+      set -Eeuo pipefail;
       until curl -sf http://prefect-server:4200/api/health; do sleep 2; done;
       python3 -m src.database.init_db;
       python3 -m src.config.init_variables;
+      prefect work-pool create br381-pool --type process || true;
       prefect --no-prompt deploy --all;
       prefect worker start --pool br381-pool
       "
