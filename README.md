@@ -19,55 +19,55 @@ Este projeto resolve esse problema ao consolidar dados brutos, aplicar tratament
 
 A solução adota uma arquitetura inspirada no padrão **Medallion (Bronze → Silver → Gold)**, complementada por etapas de enriquecimento, feature engineering, inferência de risco e alertas. Esse padrão está alinhado às sugestões do trabalho e facilita modularidade, idempotência e separação de responsabilidades entre as camadas do pipeline.
 
-### Etapas do pipeline
+## Etapas do pipeline
 
 O pipeline foi estruturado como uma sequência de etapas encadeadas, em que cada fase prepara os dados para a próxima. Essa organização facilita a manutenção, reforça a modularidade do código e permite reexecução controlada das partes do fluxo, o que é importante para idempotência, resiliência e observabilidade.
 
-## 1. Ingestão PRF
+### 1. Ingestão PRF
 
 Etapa responsável por coletar os dados brutos da fonte principal do projeto, relacionada aos registros da PRF. Nessa fase, o objetivo é capturar e persistir os dados de origem com o menor número possível de transformações, preservando rastreabilidade e permitindo reprocessamento posterior quando necessário.
 
-## 2. Camada Bronze
+### 2. Camada Bronze
 
 Representa o primeiro nível de persistência do pipeline. Funciona como zona de aterrissagem dos dados ingeridos, armazenando registros brutos ou minimamente padronizados, de modo que a origem seja preservada e a auditoria do processo seja facilitada.
 
-## 3. Bronze → Silver
+### 3. Bronze → Silver
 
 Etapa em que os dados passam por limpeza, padronização, tipagem, validação e deduplicação. Aqui o pipeline transforma a base bruta em uma camada mais consistente, reduzindo ruídos e corrigindo problemas estruturais que dificultariam análises posteriores.
 
-## 4. Camada Silver
+### 4. Camada Silver
 
 Concentra dados já tratados e organizados estruturalmente. Essa camada serve como base confiável para enriquecimentos, cruzamentos e transformações analíticas mais elaboradas, funcionando como ponto intermediário entre a ingestão e o consumo analítico.
 
-## 5. Silver → Gold
+### 5. Silver → Gold
 
 Fase de consolidação analítica. A partir dos dados refinados da Silver, o pipeline gera tabelas e estruturas orientadas ao consumo, com foco em indicadores, agregações e entidades que apoiam decisões e etapas de monitoramento.
 
-## 6. Camada Gold
+### 6. Camada Gold
 
 É a camada final de consumo analítico do projeto. Nela ficam os dados prontos para consulta e interpretação, sustentando a identificação de hotspots, a análise de risco e a produção de alertas.
 
-## 7. Detecção de hotspots
+### 7. Detecção de hotspots
 
 Etapa responsável por identificar trechos críticos da BR-381 com base na concentração, recorrência ou intensidade de ocorrências. Essa fase transforma histórico consolidado em sinal analítico útil para priorização operacional e entendimento espacial do risco.
 
-## 8. Enriquecimento meteorológico
+### 8. Enriquecimento meteorológico
 
 Adiciona contexto externo aos dados processados, associando registros a condições climáticas relevantes. Esse enriquecimento amplia a capacidade analítica do pipeline, pois incorpora fatores ambientais que podem influenciar o comportamento do risco.
 
-## 9. Criação de features
+### 9. Criação de features
 
 Converte dados tratados e enriquecidos em atributos adequados para análise preditiva. Nessa etapa são selecionadas, derivadas e organizadas variáveis que servirão de entrada para o cálculo e a predição de risco.
 
-## 10. Predição de risco histórico
+### 10. Predição de risco histórico
 
 Aplica a lógica analítica ou o modelo de risco sobre os dados históricos preparados. O resultado é uma visão estruturada da criticidade observada ao longo do tempo, ajudando a transformar o histórico em informação acionável.
 
-## 11. Risco atual
+### 11. Risco atual
 
 Produz uma visão operacional mais recente do cenário monitorado. Essa etapa consolida os dados mais atualizados do pipeline para apoiar acompanhamento contínuo e leitura quase em tempo real do risco.
 
-## 12. Alertas
+### 12. Alertas
 
 Etapa final do fluxo, responsável por transformar resultado analítico em ação. Quando determinados limiares configurados são atingidos, o sistema registra e envia notificações, permitindo resposta mais rápida a condições críticas.
 
