@@ -1,4 +1,4 @@
-<img width="300" height="424" alt="image" src="https://github.com/user-attachments/assets/ba0f81e8-1070-4513-94ae-5fcd43fbf0dc" />
+Curso: Engenharia de Inteligência Artifcial e MLOPS - PUC Minas
 
 Professor: Reinaldo Carlos Mendes
 
