@@ -327,7 +327,7 @@ Esses pontos sustentam tanto a avaliação de "pipeline funcionando" quanto a de
 
 ## 🎬 Pitch em vídeo
 
-> Adicionar aqui o link do pitch e as instruções de acesso.
+https://www.youtube.com/watch?v=FdgF0kawJqY
 
 ## 🏁 Conclusão
 
