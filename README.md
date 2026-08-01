@@ -1,3 +1,15 @@
+<img width="300" height="424" alt="image" src="https://github.com/user-attachments/assets/ba0f81e8-1070-4513-94ae-5fcd43fbf0dc" />
+
+Professor: Reinaldo Carlos Mendes
+
+Matéria: Orquestração de Workflows
+
+Aluno: Bryan Wille Souto Braga
+
+Email acadêmico: 1599029@sga.pucminas.br
+
+Data de entrega: 01/08/2026
+
 # BR381 Risk Pipeline
 
 [![Prefect 3](https://img.shields.io/badge/Prefect-3-2D6E7E?logo=prefect&logoColor=white)](https://prefect.com)
@@ -7,6 +19,12 @@
 [![Status](https://img.shields.io/badge/status-functional-brightgreen)]()
 
 > Um pipeline de dados orquestrado para transformar registros brutos de acidentes na BR-381 em risco calculado, hotspots identificados e alertas operacionais — do zero, com um único `docker compose up`.
+
+---
+
+## 🎬 Pitch em vídeo
+
+https://www.youtube.com/watch?v=FdgF0kawJqY
 
 ---
 
@@ -325,9 +343,6 @@ Para comprovar que o pipeline está funcional, é possível verificar:
 
 Esses pontos sustentam tanto a avaliação de "pipeline funcionando" quanto a demonstração no pitch em vídeo.
 
-## 🎬 Pitch em vídeo
-
-https://www.youtube.com/watch?v=FdgF0kawJqY
 
 ## 🏁 Conclusão
 
